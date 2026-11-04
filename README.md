@@ -28,9 +28,23 @@ To rotate: pick a new random token, run `UPDATE users SET password='<new_token>'
 
 ## Deployment
 
+Deploys from GitHub: the server pulls `main` and builds there, per the
+[deployment policy](https://github.com/tourscale-repos/tourscale-engineering-policies/blob/main/deployment.md).
+Never copy code to the server or build images on your machine. The server has no
+checkout of this repo yet, so there is no approved deploy command until one is set up
+(policy: *Setting up a new Hetzner app*).
+
+It runs as a service inside the shared `/opt/tourscale` stack. Once the checkout
+exists (`<checkout>` below) and the service builds from it, a deploy pulls it and
+rebuilds only this service:
+
+```sh
+ssh -t hetzner 'sudo -i sh -c "git -C <checkout> pull --ff-only && cd /opt/tourscale && docker compose -p tourscale -f docker-compose.services.yml up -d --build --no-deps ts-listmonk-mcp"'
+```
+
 - Container: `ts-listmonk-mcp` on `tourscale-net`
 - Port: `127.0.0.1:8097` (loopback only)
-- Compose entry: `/opt/tourscale/docker-compose.services.yml`
+- Compose entry: `/opt/tourscale/docker-compose.services.yml`, service `ts-listmonk-mcp`, Compose project `tourscale`
 - Env file: `/opt/tourscale/listmonk-mcp/.env` (sourced from master env)
 
 ## Local dev
